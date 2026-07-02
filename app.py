@@ -1,19 +1,8 @@
-"""
-Spot the Fake Photo — live camera demo (Streamlit + streamlit-webrtc)
 
-Run with:
-    streamlit run app.py
-
-Point your camera at something real, then at a phone/laptop screen or a
-printout, and watch the score update live.
-"""
-
-import av
 import cv2
 import joblib
 import numpy as np
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
 
 from feature_extractor import FeatureExtractor
 
@@ -60,48 +49,41 @@ with st.sidebar:
 # ---------------------------------------------------------------------------
 
 
-class FakePhotoProcessor(VideoProcessorBase):
-    def __init__(self):
-        self.frame_count = 0
-        self.last_score = 0.0
+st.subheader("Capture an Image")
 
-    def recv(self, frame):
-        img = frame.to_ndarray(format="bgr24")
-        self.frame_count += 1
+image = st.camera_input("Take a picture")
 
-        if self.frame_count % process_every_n == 0:
-            try:
-                feats = extractor.extract(img)
-                if len(feats) == feature_length:
-                    self.last_score = float(model.predict_proba(feats.reshape(1, -1))[0][1])
-            except Exception:
-                pass  # keep showing the last good score rather than crash the stream
+if image is not None:
+    file_bytes = np.asarray(bytearray(image.read()), dtype=np.uint8)
+    img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
 
-        score = self.last_score
-        is_screen = score >= threshold
-        label = "SCREEN / RECAPTURE" if is_screen else "REAL"
-        color = (0, 0, 255) if is_screen else (0, 200, 0)  # BGR
+    try:
+        features = extractor.extract(img)
 
-        h, w = img.shape[:2]
-        cv2.rectangle(img, (0, 0), (w, 70), (0, 0, 0), -1)
-        cv2.putText(img, f"{label}", (10, 35), cv2.FONT_HERSHEY_SIMPLEX, 1.0, color, 2)
-        cv2.putText(img, f"score = {score:.2f}  (threshold {threshold:.2f})",
-                    (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
+        if len(features) != feature_length:
+            st.error(
+                f"Feature mismatch: expected {feature_length}, got {len(features)}"
+            )
+        else:
+            score = float(
+                model.predict_proba(features.reshape(1, -1))[0][1]
+            )
 
-        return av.VideoFrame.from_ndarray(img, format="bgr24")
+            is_screen = score >= threshold
 
+            if is_screen:
+                st.error("SCREEN / RECAPTURE DETECTED")
+            else:
+                st.success("REAL PHOTO")
 
-RTC_CONFIGURATION = RTCConfiguration(
-    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
-)
+            st.metric("Detection Score", f"{score:.3f}")
 
-webrtc_streamer(
-    key="spot-fake-photo",
-    video_processor_factory=FakePhotoProcessor,
-    rtc_configuration=RTC_CONFIGURATION,
-    media_stream_constraints={"video": True, "audio": False},
-)
+            img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            st.image(img_rgb, caption="Captured Image", use_container_width=True)
 
+    except Exception as e:
+        st.exception(e)
+        
 st.markdown("---")
 st.markdown(
     "Score near **0** → looks like a real photo. Score near **1** → looks like a "
