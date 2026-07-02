@@ -21,7 +21,7 @@ No deep learning — this uses classic computer-vision / signal-processing featu
 | Accuracy (0.5 threshold) | 0.856 |
 | Accuracy (tuned threshold = 0.38) | **0.875** |
 | ROC AUC | 0.934 |
-| Latency | ~43/image (laptop CPU) |
+| Latency | ~43 ms/image (laptop CPU) |
 | Cost | $0 on-device; ~$0.0002-0.0003 per 1,000 images on a cheap cloud CPU instance |
 
 All numbers come from `cross_val_predict` averaged over 5 random splits, so the model is always scored on folds it never trained on. See `evaluate.py`.
@@ -60,4 +60,14 @@ python evaluate.py    # honest held-out metrics + confusion_matrix.png
 python benchmark.py   # per-image latency
 python predict.py path/to/image.jpg   # -> 0.0-1.0 score
 ```
+
+## Live demo (optional, camera-based)
+
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+Opens a browser tab that streams your webcam through the model in real time and overlays the REAL / SCREEN label and score on the video. All processing happens locally — nothing is uploaded. Threshold and frame-skip rate are adjustable from the sidebar.
+
 
