@@ -14,7 +14,7 @@ No deep learning — this uses classic computer-vision / signal-processing featu
 
 **Model:** RBF-kernel SVM (`C=5, gamma=0.02`), selected via repeated stratified 5-fold cross-validation against Random Forest, Extra Trees, Logistic Regression, and Gradient Boosting variants. The final model is fit on the 104 base photos plus 3 augmented copies of each (brightness jitter, small rotation, Gaussian noise, JPEG re-compression) — 416 samples total.
 
-## Results (honest, cross-validated — not train-set accuracy)
+## Results 
 
 | Metric | Value |
 |---|---|
