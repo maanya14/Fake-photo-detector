@@ -7,3 +7,6 @@ joblib
 tqdm 
 pandas 
 matplotlib
+streamlit
+streamlit-webrtc
+av
