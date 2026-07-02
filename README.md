@@ -1,4 +1,4 @@
-# Spot the Fake Photo
+# Fake Photo Detector
 
 Given a photo, decide whether it's a **real photo** of a real thing, or a **recapture** — a photo taken of a phone/laptop screen or a printout. Outputs a single score from 0 (real) to 1 (screen).
 
