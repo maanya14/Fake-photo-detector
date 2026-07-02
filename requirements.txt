@@ -10,4 +10,4 @@ scikit-learn
 joblib
 tqdm
 matplotlib
-av
+streamlit
